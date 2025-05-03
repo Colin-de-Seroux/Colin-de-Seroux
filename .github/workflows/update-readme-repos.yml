@@ -113,9 +113,3 @@ jobs:
 
           git commit -m ":memo: Update README.md with new public repositories [skip ci]"
           git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} HEAD:${{ github.ref_name }}
-
-      - name: Upload as artifact (optional)
-        uses: actions/upload-artifact@v4
-        with:
-          name: public-repos
-          path: public_repos.txt
