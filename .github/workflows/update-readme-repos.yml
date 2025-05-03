@@ -1,0 +1,121 @@
+name: Update README with Public Repositories
+
+on:
+  schedule:
+    #        ┌───────────── minute (0 - 59)
+    #        │   ┌───────────── hour (0 - 23)
+    #        │   │ ┌───────────── day of the month (1 - 31)
+    #        │   │ │ ┌───────────── month (1 - 12 or JAN-DEC)
+    #        │   │ │ │ ┌───────────── day of the week (0 - 6 or SUN-SAT)
+    #        │   │ │ │ │
+    #        │   │ │ │ │
+    #        *   * * * *
+    - cron: "0 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-readme-repos:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install requests
+        run: pip install requests beautifulsoup4
+
+      - name: Generate public_repos.txt and Update README.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ORG_LIST: ${{ vars.ORG_LIST }}
+        run: |
+          python <<EOF
+          import os
+          import requests
+          from bs4 import BeautifulSoup
+
+          token = os.getenv("GITHUB_TOKEN")
+          username = "Colin-de-Seroux"
+          org_list = os.getenv("ORG_LIST", "")
+          headers = {"Authorization": f"token {token}"}
+
+          def get_public_repos(url):
+              repos = []
+
+              while url:
+                  r = requests.get(url, headers=headers)
+                  r.raise_for_status()
+                  data = r.json()
+                  repos.extend([repo["full_name"] for repo in data if not repo["private"]])
+                  url = r.links.get("next", {}).get("url")
+
+              return repos
+
+          all_repos = []
+
+          print(f"Fetching public repos for user: {username}")
+
+          all_repos.extend(get_public_repos(f"https://api.github.com/users/{username}/repos"))
+
+          if org_list:
+              orgs = [org.strip() for org in org_list.split(",") if org.strip()]
+
+              for org in orgs:
+                  print(f"Fetching public repos for organization: {org}")
+                  all_repos.extend(get_public_repos(f"https://api.github.com/orgs/{org}/repos"))
+
+          readme_path = "README.md"
+
+          with open(readme_path, "r") as f:
+              readme_content = f.read()
+
+          soup = BeautifulSoup(readme_content, "html.parser")
+
+          repos_div = soup.find("div", {"id": "repos"})
+
+          if repos_div:
+              repos_div.clear()
+
+          for repo in all_repos:
+            repo_name = repo.split("/")[-1]  # Extract repository name
+            repo_owner = repo.split("/")[0]  # Extract owner name
+            repo_url = f"https://github.com/{repo}"
+            
+            new_link = soup.new_tag("a", href=repo_url)
+            
+            img_tag = soup.new_tag("img", src=f"https://github-stats.colindeseroux.fr/pin/?username={repo_owner}&repo={repo_name}&theme=tokyonight&border_color=2e4058", alt=repo_name)
+            img_tag["alt"] = repo_name
+            
+            new_link.append(img_tag)
+            repos_div.append(new_link)
+
+          with open(readme_path, "w") as f:
+              f.write(str(soup))
+
+          print("\n✅ Updated README.md with new public repositories")
+          EOF
+
+      - name: Commit and push modified README.md
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+
+          git add README.md
+          git diff --cached --quiet && echo "No changes to commit." && exit 0
+
+          git commit -m ":memo: Update README.md with new public repositories [skip ci]"
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} HEAD:${{ github.ref_name }}
+
+      - name: Upload as artifact (optional)
+        uses: actions/upload-artifact@v4
+        with:
+          name: public-repos
+          path: public_repos.txt

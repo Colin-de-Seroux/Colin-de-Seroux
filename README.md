@@ -1,7 +1,7 @@
 <h1 align="center"><b>Hi <img src="https://media.giphy.com/media/hvRJCLFzcasrR4ia7z/giphy.gif" width="35">, I'm Colin</b></h1>
 
 <p align="center">
-  <a href="https://github.com/DenverCoder1/readme-typing-svg"><img src="https://readme-typing-svg.herokuapp.com?font=Time+New+Roman&color=cyan&size=25&center=true&vCenter=true&width=1000&height=100&lines=Hello+world+&hearts;+!++;Colin+de+Seroux+alias+Phénix333;Computer+Science+Student+in+AI;M2+Artificial+Intelligence+and+Data+Engeneering+with+Polytech"></a>
+  <a href="https://github.com/DenverCoder1/readme-typing-svg"><img src="https://readme-typing-svg.herokuapp.com?font=Time+New+Roman&amp;color=cyan&amp;size=25&amp;center=true&amp;vCenter=true&amp;width=1000&amp;height=100&amp;lines=Hello+world+♥+!++;Colin+de+Seroux+alias+Phénix333;Computer+Science+Student+in+AI;M2+Artificial+Intelligence+and+Data+Engeneering+with+Polytech"/></a>
 </p>
 
 ### My name is Colin de Seroux. I'm passionate about software development and new technologies (especially AI in computer vision) and I'm constantly seeking ways to learn and improve.
@@ -39,18 +39,21 @@
 ---
 
 <br>
-  <a href="https://github.com/colindeseroux/logger">
-    <img src="https://github-stats.colindeseroux.fr/pin/?username=colindeseroux&repo=logger&theme=tokyonight&border_color=2e4058" alt="logger" />
-  </a>
-  <a href="https://github.com/colindeseroux/self-driving-rides">
-    <img src="https://github-stats.colindeseroux.fr/pin/?username=colindeseroux&repo=self-driving-rides&theme=tokyonight&border_color=2e4058" alt="self-driving-rides" />
-  </a>
-  <a href="https://github.com/colindeseroux/ai-game-programming-mqtt">
-    <img src="https://github-stats.colindeseroux.fr/pin/?username=colindeseroux&repo=ai-game-programming-mqtt&theme=tokyonight&border_color=2e4058" alt="ai-game-programming-mqtt" />
-  </a>
-  <a href="https://github.com/colindeseroux/linkedin-banner-generator">
-    <img src="https://github-stats.colindeseroux.fr/pin/?username=colindeseroux&repo=linkedin-banner-generator&theme=tokyonight&border_color=2e4058" alt="linkedin-banner-generator" />
-  </a>
+
+  <div id="repos">
+    <a href="https://github.com/colindeseroux/logger">
+      <img src="https://github-stats.colindeseroux.fr/pin/?username=colindeseroux&repo=logger&theme=tokyonight&border_color=2e4058" alt="logger" />
+    </a>
+    <a href="https://github.com/colindeseroux/self-driving-rides">
+      <img src="https://github-stats.colindeseroux.fr/pin/?username=colindeseroux&repo=self-driving-rides&theme=tokyonight&border_color=2e4058" alt="self-driving-rides" />
+    </a>
+    <a href="https://github.com/colindeseroux/ai-game-programming-mqtt">
+      <img src="https://github-stats.colindeseroux.fr/pin/?username=colindeseroux&repo=ai-game-programming-mqtt&theme=tokyonight&border_color=2e4058" alt="ai-game-programming-mqtt" />
+    </a>
+    <a href="https://github.com/colindeseroux/linkedin-banner-generator">
+      <img src="https://github-stats.colindeseroux.fr/pin/?username=colindeseroux&repo=linkedin-banner-generator&theme=tokyonight&border_color=2e4058" alt="linkedin-banner-generator" />
+    </a>
+  </div>
 </div>
 
 <br>
