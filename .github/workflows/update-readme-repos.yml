@@ -1,15 +1,15 @@
-name: Update README with Public Repositories
+name: Update README with contributed public repositories
 
 on:
   schedule:
     #        ┌───────────── minute (0 - 59)
-    #        │   ┌───────────── hour (0 - 23)
-    #        │   │ ┌───────────── day of the month (1 - 31)
-    #        │   │ │ ┌───────────── month (1 - 12 or JAN-DEC)
-    #        │   │ │ │ ┌───────────── day of the week (0 - 6 or SUN-SAT)
-    #        │   │ │ │ │
-    #        │   │ │ │ │
-    #        *   * * * *
+    #        │ ┌───────────── hour (0 - 23)
+    #        │ │ ┌───────────── day of the month (1 - 31)
+    #        │ │ │ ┌───────────── month (1 - 12 or JAN-DEC)
+    #        │ │ │ │ ┌───────────── day of the week (0 - 6 or SUN-SAT)
+    #        │ │ │ │ │
+    #        │ │ │ │ │
+    #        * * * * *
     - cron: "0 * * * *"
   workflow_dispatch:
 
@@ -29,48 +29,122 @@ jobs:
         with:
           python-version: "3.x"
 
-      - name: Install requests
+      - name: Install Python dependencies
         run: pip install requests beautifulsoup4
 
-      - name: Generate public_repos.txt and Update README.md
+      - name: Detect contributed repos and update README.md
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          ORG_LIST: ${{ vars.ORG_LIST }}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_USERNAME: ${{ github.actor }}
+          EXCLUDED_REPOS: ${{ vars.EXCLUDED_REPOS }}
         run: |
           python <<EOF
           import os
           import requests
+          import time
           from bs4 import BeautifulSoup
 
-          token = os.getenv("GITHUB_TOKEN")
-          username = "Colin-de-Seroux"
-          org_list = os.getenv("ORG_LIST", "")
-          headers = {"Authorization": f"token {token}"}
+          GITHUB_USERNAME = os.getenv("GITHUB_USERNAME")
+          GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
+          HEADERS = {"Authorization": f"token {GITHUB_TOKEN}"}
+          API_BASE = "https://api.github.com"
 
-          def get_public_repos(url):
-              repos = []
+          def search_repos_from_commits(username):
+              repos = set()
+              page = 1
 
-              while url:
-                  r = requests.get(url, headers=headers)
-                  r.raise_for_status()
-                  data = r.json()
-                  repos.extend([repo["full_name"] for repo in data if not repo["private"]])
-                  url = r.links.get("next", {}).get("url")
+              while True:
+                  url = f"{API_BASE}/search/commits?q=author:{username}&per_page=100&page={page}"
+                  headers = HEADERS.copy()
+                  headers["Accept"] = "application/vnd.github.cloak-preview+json"
+                  response = requests.get(url, headers=headers)
+
+                  if response.status_code != 200:
+                      break
+
+                  data = response.json()
+
+                  for item in data.get("items", []):
+                      repos.add(item["repository"]["full_name"])
+
+                  if "next" not in response.links:
+                      break
+
+                  page += 1
+                  time.sleep(0.2)
 
               return repos
 
-          all_repos = []
+          def get_candidate_repos_by_contribution(username):
+              repos = set()
+              sources = [
+                  f"/users/{username}/repos?per_page=100",
+                  f"/users/{username}/events/public?per_page=100",
+                  f"/search/issues?q=author:{username}+type:pr&per_page=100",
+              ]
 
-          print(f"Fetching public repos for user: {username}")
+              for path in sources:
+                  url = f"{API_BASE}{path}"
+                  page = 1
 
-          all_repos.extend(get_public_repos(f"https://api.github.com/users/{username}/repos"))
+                  while True:
+                      paginated_url = url + f"&page={page}" if "?" in url else url + f"?page={page}"
+                      response = requests.get(paginated_url, headers=HEADERS)
 
-          if org_list:
-              orgs = [org.strip() for org in org_list.split(",") if org.strip()]
+                      if response.status_code != 200:
+                          break
 
-              for org in orgs:
-                  print(f"Fetching public repos for organization: {org}")
-                  all_repos.extend(get_public_repos(f"https://api.github.com/orgs/{org}/repos"))
+                      data = response.json()
+                      items = data if isinstance(data, list) else data.get("items", [])
+
+                      for item in items:
+                          repo_url = item.get("repository_url") or item.get("repo", {}).get("url")
+
+                          if repo_url:
+                              repo_full = repo_url.replace("https://api.github.com/repos/", "")
+                              repos.add(repo_full)
+
+                      if "next" not in response.links:
+                          break
+
+                      page += 1
+                      time.sleep(0.2)
+
+              return repos
+
+          def is_repo_public(repo_full_name):
+              url = f"{API_BASE}/repos/{repo_full_name}"
+              r = requests.get(url, headers=HEADERS)
+              return r.status_code == 200 and not r.json().get("private", True)
+
+          def has_commits_in_repo(repo_full_name, username):
+              url = f"{API_BASE}/repos/{repo_full_name}/commits?author={username}&per_page=1"
+              r = requests.get(url, headers=HEADERS)
+              return r.status_code == 200 and len(r.json()) > 0
+
+          print("[*] Search for public repositories with contributions...")
+
+          repos_from_search = search_repos_from_commits(GITHUB_USERNAME)
+          candidate_repos = get_candidate_repos_by_contribution(GITHUB_USERNAME)
+          all_repos = repos_from_search.union(candidate_repos)
+
+          confirmed_repos = set()
+
+          excluded = set([r.strip() for r in os.getenv("EXCLUDED_REPOS", "").split(",") if r.strip()])
+
+          for repo in all_repos:
+              if repo in excluded:
+                  continue
+
+              if is_repo_public(repo) and has_commits_in_repo(repo, GITHUB_USERNAME):
+                  confirmed_repos.add(repo)
+
+              time.sleep(0.2)
+
+          print(f"\n[✓] Public deposits confirmed with contribution ({len(confirmed_repos)}):")
+
+          for repo in sorted(confirmed_repos):
+              print(f"- {repo}")
 
           readme_path = "README.md"
 
@@ -78,38 +152,33 @@ jobs:
               readme_content = f.read()
 
           soup = BeautifulSoup(readme_content, "html.parser")
-
           repos_div = soup.find("div", {"id": "repos"})
 
           if repos_div:
               repos_div.clear()
+          else:
+              repos_div = soup.new_tag("div", id="repos")
+              soup.body.append(repos_div)
 
-          for repo in all_repos:
-            repo_name = repo.split("/")[-1]  # Extract repository name
-            repo_owner = repo.split("/")[0]  # Extract owner name
-            repo_url = f"https://github.com/{repo}"
-            
-            new_link = soup.new_tag("a", href=repo_url)
-            
-            img_tag = soup.new_tag("img", src=f"https://github-stats.colindeseroux.fr/pin/?username={repo_owner}&repo={repo_name}&theme=tokyonight&border_color=2e4058", alt=repo_name)
-            img_tag["alt"] = repo_name
-            
-            new_link.append(img_tag)
-            repos_div.append(new_link)
+          for repo in sorted(confirmed_repos):
+              owner, name = repo.split("/")
+              repo_url = f"https://github.com/{repo}"
+              a_tag = soup.new_tag("a", href=repo_url)
+              img_tag = soup.new_tag("img", src=f"https://github-stats.colindeseroux.fr/pin/?username={owner}&repo={name}&theme=tokyonight&border_color=2e4058", alt=name)
+              a_tag.append(img_tag)
+              repos_div.append(a_tag)
 
           with open(readme_path, "w") as f:
               f.write(str(soup))
 
-          print("\n✅ Updated README.md with new public repositories")
+          print("✅ README.md updated with public repositories")
           EOF
 
-      - name: Commit and push modified README.md
+      - name: Commit and push changes
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@users.noreply.github.com"
-
           git add README.md
           git diff --cached --quiet && echo "No changes to commit." && exit 0
-
-          git commit -m ":memo: Update README.md with new public repositories [skip ci]"
-          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} HEAD:${{ github.ref_name }}
+          git commit -m "Update README.md with contributed public repositories [skip ci]"
+          git push
