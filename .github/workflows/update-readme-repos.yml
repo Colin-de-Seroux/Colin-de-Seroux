@@ -167,6 +167,7 @@ jobs:
               img_tag = soup.new_tag("img", src=f"https://github-stats.colindeseroux.fr/pin/?username={owner}&repo={name}&theme=tokyonight&border_color=2e4058", alt=name)
               a_tag.append(img_tag)
               repos_div.append(a_tag)
+              repos_div.append(" ")
 
           with open(readme_path, "w") as f:
               f.write(str(soup))
