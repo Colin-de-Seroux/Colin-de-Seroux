@@ -27,7 +27,7 @@
 <img alt="Phenix333's Github Stats" height="230px" src="https://github-stats.colindeseroux.fr/?username=Colin-de-Seroux&amp;locale=en&amp;theme=tokyonight&amp;rank_icon=github&amp;border_color=2e4058"/>
 </div>
 <div>
-<img alt="Phenix333's Github Stats 2" height="210px" src="https://streak-stats.demolab.com/?user=Colin-de-Seroux&amp;theme=tokyonight-duo&amp;border=2E4058&amp;background=1A1B27"/>
+<img alt="Phenix333's Github Stats 2" height="210px" src="https://github-readme-streak-stats-colin-de-serouxs-projects.vercel.app/?user=Colin-de-Seroux&amp;theme=tokyonight-duo&amp;border=2E4058&amp;background=1A1B27"/>
 </div>
 <div>
 <img alt="Phenix333's Language Stats" height="600px" src="https://github-stats.colindeseroux.fr/top-langs?username=Colin-de-Seroux&amp;langs_count=100&amp;exclude_repo=S5-AR&amp;hide=makefile,blade,purebasic,cmake,perl,llvm,rust,hack,ruby,objective-c,batchfile,jupyter%20notebook&amp;layout=donut&amp;local=en&amp;theme=tokyonight&amp;border_color=2e4058"/>
