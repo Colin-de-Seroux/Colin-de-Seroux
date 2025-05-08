@@ -8,7 +8,7 @@
 <br/>
 <br/>
 
-## <img alt="Dev gif" src="https://github.com/7oSkaaa/7oSkaaa/blob/main/Images/about_me.gif?raw=true" width="35"/> About me
+## <img alt="Dev gif" src="https://github.com/Colin-de-Seroux/Colin-de-Seroux/blob/main/assets/dev.gif?raw=true" width="35"/> About me
 
 - 🎓 **Training :** Computer science student specializing in AI (M2 Nice Côte d'Azur with Polytech Sophia).
 - 🧑‍💻 **Work experiences :** 3 years of work-study in artificial intelligence and software development, working on both team-based and individual projects. Contributions included: an after-sales service platform with customer access, a chatbot using Retrieval-Augmented Generation (RAG) on company-specific data integrated with external tools, and a computer vision system for automated dish recognition at checkout.
