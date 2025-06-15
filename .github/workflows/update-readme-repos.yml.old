@@ -1,4 +1,5 @@
 name: Update README with contributed public repositories
+description: Currently disabled due to poor indexing of repositories from github
 
 on:
   schedule:
